@@ -1,4 +1,5 @@
 import os
+os.system("python -m pip install flask")
 try:
   from flask import Flask, request, redirect, render_template, send_file, jsonify
   from threading import Thread
@@ -8,7 +9,7 @@ except ModuleNotFoundError:
   from flask import Flask, request, redirect, render_template, send_file, jsonify
   from threading import Thread
   import urllib.request
-  
+
 app = Flask(__name__)
 
 NUMBER_OF_ROWS = 180
