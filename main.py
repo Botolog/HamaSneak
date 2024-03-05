@@ -1,12 +1,17 @@
-from flask import Flask, request, redirect, render_template, send_file, jsonify
-from threading import Thread
 import os
-import urllib.request
-
+try:
+  from flask import Flask, request, redirect, render_template, send_file, jsonify
+  from threading import Thread
+  import urllib.request
+except ImportError:
+  os.system("python -m pip install flask")
 app = Flask(__name__)
 
 NUMBER_OF_ROWS = 180
 
+@app.route("/")
+def mainPage():
+  return "yoyomotherfckersitfuckingworking"
 
 @app.route('/US/<y>/<arr>')
 def upload_scans(y, arr):
