@@ -178,8 +178,8 @@ void driveIR(int speed, int duration = 0, float hardness = 0.5, float Ddrift = 0
     delay(20);
     drift += Ddrift;
     if (abs(IRLval - IRRval) < 10) {drift=0;}
-  } // driveIR(80, 1, 1000);  for hard angles like rectanle
-    // driveIR(100, 2, 1000); for soft angles like a little curve
+  } // driveIR(100, 5000, 0.8, 0.05);  for hard angles like rectanle
+    // driveIR(100, 5000, 0.6, 0.02); for soft angles like a little curve
 }
 
 // WiFi
