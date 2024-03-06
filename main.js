@@ -24,6 +24,37 @@ dbx.filesListFolder({path: ''})
       console.error(error);
     });
 
+async function createFile() {
+  try {
+      const filename = '/test.tes'; // Filename to create
+      const content = 'Hello, world!'; // Content of the file
+
+      const response = await fetch('https://content.dropboxapi.com/2/files/upload', {
+          method: 'POST',
+          headers: {
+              'Authorization': 'Bearer ' + ACCESS_TOKEN,
+              'Content-Type': 'application/octet-stream',
+              'Dropbox-API-Arg': JSON.stringify({
+                  path: filename,
+                  mode: 'add',
+                  autorename: true,
+                  mute: false
+              })
+          },
+          body: content
+      });
+
+      const data = await response.json();
+      console.log('File created:', data);
+      alert('File created successfully!');
+  } catch (error) {
+      console.error('Error creating file:', error);
+      alert('Error creating file. Please check the console for details.');
+  }
+}
+
+createFile();
+
 function update_rout(act, size) {
   fs.appendFileSync("rout.tes", `${act}${size}\n`);
 
