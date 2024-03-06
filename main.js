@@ -63,8 +63,8 @@ async function readFile() {
   }
 }
 
-// createFile();
-readFile();
+createFile();
+// readFile();
 
 function update_rout(act, size) {
   fs.appendFileSync("rout.tes", `${act}${size}\n`);
