@@ -13,7 +13,7 @@ const pathArray = pathWithoutDomain.split("/");
 console.log("Path Array:", pathArray);
 
 
-var dbx = new Dropbox({ accessToken: ACCESS_TOKEN });
+var dbx = new Dropbox.Dropbox({ accessToken: ACCESS_TOKEN });
 
 
 dbx.filesListFolder({path: ''})
