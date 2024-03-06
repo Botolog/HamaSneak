@@ -1,5 +1,4 @@
-const fs = require('fs');
-
+gapi.load('client', init);
 const port = 8080;
 
 const NUMBER_OF_ROWS = 180;
@@ -27,7 +26,7 @@ if (pathArray[0]=="Y"){
 }
 
 // Load the Google Drive API client library
-gapi.load('client', init);
+
 
 function init() {
   // Initialize the API client library with your API key
