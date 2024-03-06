@@ -31,9 +31,9 @@ if (pathArray[0]=="Y"){
 function init() {
   // Initialize the API client library with your API key
   gapi.client.init({
-    apiKey: 'YOUR_API_KEY',
+    apiKey: 'AIzaSyB7vUWi2WilUzeN909wQMgj7m77xLy2uPY',
     discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-    clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
+    clientId: '388895503688-sg4a7pim4cmtfmeg9qg6gali5le2r51p.apps.googleusercontent.com',
     scope: 'https://www.googleapis.com/auth/drive'
   }).then(function() {
     // Authenticate the user
