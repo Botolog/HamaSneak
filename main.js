@@ -6,23 +6,16 @@ const NUMBER_OF_ROWS = 180;
 
 // Get the full URL path
 const fullPath = window.location.pathname;
-
-// Split the path by "/" to get an array of path segments
 const pathSegments = fullPath.split("/");
-
-// Remove the first element of the array (which is empty, because the path starts with "/")
 pathSegments.shift();
-
-// Join the remaining path segments back together with "/"
 const pathWithoutDomain = pathSegments.join("/");
+const pathArray = pathWithoutDomain.split("/");
+console.log("Path Array:", pathArray);
 
-// Log the path without the domain to the console
-console.log("Path without domain:", pathWithoutDomain);
 
-
-// if ("/" in path){
-//   console.log('yoyomotherfckersitfuckingworking');
-//}
+if (pathArray[0]=="Y"){
+  console.log('yoyomotherfckersitfuckingworking');
+}
 
 // app.get('/US/:y/:arr', (req, res) => {
 //   const { y, arr } = req.params; 
