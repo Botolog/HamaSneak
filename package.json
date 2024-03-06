@@ -1,0 +1,17 @@
+{
+  "name": "hamasneak",
+  "version": "1.0.0",
+  "description": "lidargoesbrrr",
+  "main": "main.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node main.js"
+  },
+  "author": "Botolog_E",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.3"
+  }
+}
