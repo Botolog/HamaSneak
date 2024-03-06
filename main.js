@@ -1,4 +1,5 @@
-gapi.load('client', init);
+var ACCESS_TOKEN = "sl.Bw4BJvwV0lF13FQG5iYaC9DsWUlq0TdQHbrXRuxPddBJF_W_GUpyvTpC60a0IOnq8dctA3SLiUlMyhrbNNGEprXjBOt4aNY6aTxwkipnlW-ISzQ0Kl9o9Aa6aYoFNLlkT3A0PtbAk8vU";
+
 const port = 8080;
 
 const NUMBER_OF_ROWS = 180;
@@ -10,6 +11,18 @@ pathSegments.shift();
 const pathWithoutDomain = pathSegments.join("/");
 const pathArray = pathWithoutDomain.split("/");
 console.log("Path Array:", pathArray);
+
+
+var dbx = new Dropbox({ accessToken: ACCESS_TOKEN });
+
+
+dbx.filesListFolder({path: ''})
+    .then(function(response) {
+      console.log(response.entries);
+    })
+    .catch(function(error) {
+      console.error(error);
+    });
 
 function update_rout(act, size) {
   fs.appendFileSync("rout.tes", `${act}${size}\n`);
@@ -23,40 +36,6 @@ function update_rout(act, size) {
 
 if (pathArray[0]=="Y"){
   console.log('yoyomotherfckersitfuckingworking');
-}
-
-// Load the Google Drive API client library
-
-
-function init() {
-  // Initialize the API client library with your API key
-  gapi.client.init({
-    // apiKey: 'AIzaSyB7vUWi2WilUzeN909wQMgj7m77xLy2uPY',
-    // discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-    clientId: '388895503688-sg4a7pim4cmtfmeg9qg6gali5le2r51p.apps.googleusercontent.com',
-    // scope: 'https://www.googleapis.com/auth/drive'
-    plugin_name: "chat"
-  }).then(function() {
-    // Authenticate the user
-    return gapi.auth2.getAuthInstance().signIn();
-  }).then(function() {
-    // Once authenticated, you can make API requests
-    gapi.client.drive.files.list({
-      'pageSize': 10,
-      'fields': "nextPageToken, files(id, name)"
-    }).then(function(response) {
-      var files = response.result.files;
-      if (files && files.length > 0) {
-        console.log("Files:");
-        for (var i = 0; i < files.length; i++) {
-          var file = files[i];
-          console.log(file.name + ' (' + file.id + ')');
-        }
-      } else {
-        console.log('No files found.');
-      }
-    });
-  });
 }
 
 // app.get('/US/:y/:arr', (req, res) => {
@@ -92,3 +71,7 @@ function init() {
 // app.listen(port, () => {
 //   console.log(`Server running at http://localhost:${port}`);
 // });
+
+// App key: n699rkes9xaxodz
+// App secret: fcznnw8rwhv61os
+// sl.Bw4BJvwV0lF13FQG5iYaC9DsWUlq0TdQHbrXRuxPddBJF_W_GUpyvTpC60a0IOnq8dctA3SLiUlMyhrbNNGEprXjBOt4aNY6aTxwkipnlW-ISzQ0Kl9o9Aa6aYoFNLlkT3A0PtbAk8vU
