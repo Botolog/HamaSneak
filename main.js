@@ -1,3 +1,5 @@
+const { read } = require("fs");
+
 var ACCESS_TOKEN = "sl.Bw5ZWkBRmsw8b4jRN49atQl1wxvLScH9EnsnrUvBL3BXDTBNVr2SPqlhicqyg0kJysCVEuGUSMjoo3r9sMk7ljyEGpFoXF6oEifMx7D6bqxbL5D4Mahvvb7hSvtPmtEAGeYQ1abW6dHE";
 
 const port = 8080;
@@ -64,6 +66,7 @@ async function readFile() {
 }
 
 createFile();
+read();
 
 function update_rout(act, size) {
   fs.appendFileSync("rout.tes", `${act}${size}\n`);
