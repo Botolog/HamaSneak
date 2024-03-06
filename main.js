@@ -11,7 +11,7 @@ app.get('/', (req, res) => {
 }); 
 
 app.get('/US/:y/:arr', (req, res) => {
-  const { y, arr } = req.params;
+  const { y, arr } = req.params; 
   let files = fs.readdirSync('scans/');
   let file_count = files.length;
 
