@@ -8,7 +8,7 @@ const NUMBER_OF_ROWS = 180;
 
 app.get('/', (req, res) => {
   res.send('yoyomotherfckersitfuckingworking');
-});
+}); 
 
 app.get('/US/:y/:arr', (req, res) => {
   const { y, arr } = req.params;
