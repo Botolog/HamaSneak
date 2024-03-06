@@ -31,10 +31,11 @@ if (pathArray[0]=="Y"){
 function init() {
   // Initialize the API client library with your API key
   gapi.client.init({
-    apiKey: 'AIzaSyB7vUWi2WilUzeN909wQMgj7m77xLy2uPY',
-    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+    // apiKey: 'AIzaSyB7vUWi2WilUzeN909wQMgj7m77xLy2uPY',
+    // discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
     clientId: '388895503688-sg4a7pim4cmtfmeg9qg6gali5le2r51p.apps.googleusercontent.com',
-    scope: 'https://www.googleapis.com/auth/drive'
+    // scope: 'https://www.googleapis.com/auth/drive'
+    plugin_name: "chat"
   }).then(function() {
     // Authenticate the user
     return gapi.auth2.getAuthInstance().signIn();
