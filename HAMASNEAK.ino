@@ -334,5 +334,5 @@ void setup()
 
 void loop()
 {
-  driveIR(100, 5000, 0.8, 0.05);
+  driveIR(90, 5000, 0.3, 0.08);
 }

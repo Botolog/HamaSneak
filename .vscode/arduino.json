@@ -2,6 +2,7 @@
     "port": "COM4",
     "board": "esp32:esp32:esp32doit-devkit-v1",
     "programmer": "esptool",
-    "sketch": "test\\test.ino",
+    "sketch": "test\\test2\\test2.ino",
+    "output": "ArduinoOutput",
     "configuration": "FlashFreq=80,UploadSpeed=921600,DebugLevel=none,EraseFlash=none"
 }
