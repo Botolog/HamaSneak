@@ -285,21 +285,43 @@ String getToken()
   return response;
 }
 
-void uploadScan(String StrScan[])
+String startSession()
 {
-  String FULL = "";
-  for (int i = 0; i < 180; i++)
-  {
-    // FULL.concat(StrScan[i] + '\n');
-    // delay(10);
-  }
-  // Serial.println(FULL);
   HTTPClient http;
-  http.begin(BaseURL);
+  http.begin("https://content.dropboxapi.com/2/files/upload_session/start");
   http.addHeader("Authorization", "Bearer " + String(dropboxToken));
   http.addHeader("Content-Type", "application/octet-stream");
-  http.addHeader("Dropbox-API-Arg", "{\"path\": \"" + String("/test.txt") + "\",\"mode\": \"add\",\"autorename\": true,\"mute\": false}");
-  Serial.println(http.POST("FULL"));
+  http.addHeader("Dropbox-API-Arg", "{\"close\":false}");
+  Serial.println(http.POST(""));
+  // delay(1000);
+  String Y = http.getString();
+  Serial.println("Dropbox response: " + Y);
+  return Y.substring(16, Y.length() - 2);
+}
+void uploadScan(String StrScan[])
+{
+  int charCount = 0;
+  String SID = startSession();
+  Serial.println("SID: " + SID);
+  HTTPClient http;
+  for (int i = 0; i < 180; i++)
+  {
+    // (StrScan[i] + '\n');
+    http.begin("https://content.dropboxapi.com/2/files/upload_session/append_v2");
+    http.addHeader("Authorization", "Bearer " + String(dropboxToken));
+    http.addHeader("Content-Type", "application/octet-stream");
+    http.addHeader("Dropbox-API-Arg", "{\"close\":false,\"cursor\":{\"offset\":" + String(charCount) + ",\"session_id\":\"" + String(SID) + "\"}}");
+    Serial.println(http.POST((StrScan[i] + '\n')));
+    charCount += StrScan[i].length()+1;
+    // delay(1000);
+    Serial.println("Dropbox response: " + http.getString());
+    http.end(); // Free the resources
+  }
+  http.begin("https://content.dropboxapi.com/2/files/upload_session/finish");
+  http.addHeader("Authorization", "Bearer " + String(dropboxToken));
+  http.addHeader("Content-Type", "application/octet-stream");
+  http.addHeader("Dropbox-API-Arg", "{\"commit\":{\"autorename\":true,\"mode\":\"add\",\"mute\":false,\"path\":\"" + String("/test.txt") + "\",\"strict_conflict\":false},\"cursor\":{\"offset\":" + String(charCount) + ",\"session_id\":\"" + String(SID) + "\"}}");
+  Serial.println(http.POST(""));
   // delay(1000);
   Serial.println("Dropbox response: " + http.getString());
   http.end(); // Free the resources
@@ -346,7 +368,7 @@ int16_t tfAddr = TFL_DEF_ADR; // Use this default I2C address
 int xdots[180];
 int ydots[180];
 
-float K = 0.199+0.801;
+float K = 0.199 + 0.801;
 
 void setupScanner()
 {
@@ -410,13 +432,15 @@ void scan()
     String toAdd = "";
     for (int i = 0; i < 180; i++)
     {
-       toAdd = toAdd + xdots[i];
-       if (i!=179) toAdd = toAdd + ',';
+      toAdd = toAdd + xdots[i];
+      if (i != 179)
+        toAdd = toAdd + ',';
       //  else Serial.println(toAdd);
     }
     toSend[YServo_position] = toAdd;
     Serial.print("-");
     Serial.println(YServo_position);
+    
 
     delay(20);
   }
