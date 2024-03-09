@@ -241,7 +241,7 @@ const char *ssid = "Kaluga 2.4";
 const char *password = "41931047";
 
 String BaseURL = "https://content.dropboxapi.com/2/files/upload";
-const char *dropboxToken = "sl.BxDEltkdicfi3NZ9ZROqOxIHxlseBAaJzychpG9yBQE0h_7gXRwyzfK4FBir9xQPtI-MmE55JB1lf3N0XCen5rZ-pvsOPEMqbDZuPGVe_H-TC74gTBEQ0gDu_Xc67AYbTZjb3iw8bPuA";
+String dropboxToken = ":(";
 
 void setupWiFi()
 {
@@ -251,17 +251,55 @@ void setupWiFi()
     delay(1000);
     Serial.println("Connecting to WiFi..");
   }
+  getToken();
 }
 
-void uploadScan(String StrScan)
+String getToken()
 {
-  Serial.println(StrScan);
+  HTTPClient http;
+
+  // Construct the Dropbox API URL for file upload
+  String url = "https://hamasneak.pages.dev/TOKEN";
+  http.begin(url);
+
+  int httpResponseCode = http.GET();
+
+  // Check for successful response
+  String response = "NOPE";
+  if (httpResponseCode > 0)
+  {
+    Serial.print("Dropbox response code: ");
+    Serial.println(httpResponseCode);
+    response = http.getString();
+    Serial.println("Dropbox response: " + response);
+  }
+  else
+  {
+    Serial.print("Error in Dropbox request, HTTP response code: ");
+    Serial.println(httpResponseCode);
+  }
+
+  // Close connection
+  http.end();
+  dropboxToken = response;
+  return response;
+}
+
+void uploadScan(String StrScan[])
+{
+  String FULL = "";
+  for (int i = 0; i < 180; i++)
+  {
+    FULL = FULL + StrScan[i] + '\n';
+  }
+  Serial.println(FULL);
   HTTPClient http;
   http.begin(BaseURL);
   http.addHeader("Authorization", "Bearer " + String(dropboxToken));
   http.addHeader("Content-Type", "application/octet-stream");
   http.addHeader("Dropbox-API-Arg", "{\"path\": \"" + String("/test.txt") + "\",\"mode\": \"add\",\"autorename\": true,\"mute\": false}");
-  Serial.println(http.POST(StrScan));
+  Serial.println(http.POST(FULL));
+  delay(100);
   String response = http.getString();
   Serial.println("Dropbox response: " + response);
   http.end(); // Free the resources
@@ -312,8 +350,8 @@ float K = 0.801;
 
 void setupScanner()
 {
-  Xservo.attach(32);
-  Yservo.attach(33);
+  Xservo.attach(23);
+  Yservo.attach(2);
   Yservo.write(0);
   Xservo.write(0);
 
@@ -346,7 +384,7 @@ double t = 1.2;
 
 void scan()
 {
-  String toSend = "";
+  String toSend[180];
   Xservo.write(XServo_position * K);
   for (int YServo_position = 0; YServo_position < 180; YServo_position += dy)
   {
@@ -355,7 +393,7 @@ void scan()
       for (XServo_position = 0; XServo_position < 180; XServo_position += dx)
       {
         Xservo.write(XServo_position * K);
-        xdots[XServo_position] = mesure();
+        xdots[XServo_position] = XServo_position;
       }
     }
     else
@@ -369,17 +407,14 @@ void scan()
     Yservo.write(YServo_position);
     Xservo.write(0);
     // uploadScan(YServo_position, xdots);
+    String toAdd = "";
     for (int i = 0; i < 180; i++)
     {
-      // Serial.print(xdots[i]);
-      // Serial.print(";");
-      toSend = toSend + xdots[i];
-      if (i != 179)
-      {
-        toSend = toSend + ",";
-      }
+       toAdd = toAdd + xdots[i];
+       if (i!=179) toAdd = toAdd + ',';
+       else Serial.println(toAdd);
     }
-    toSend = toSend + "\n";
+    toSend[YServo_position] = toAdd;
     Serial.print("-");
     Serial.println(YServo_position);
 
@@ -392,7 +427,7 @@ void scan()
 void setup()
 {
   Serial.begin(115200);
-  // setupMotors();
+  setupMotors();
   // setupDisplay();
   // setupRGB();
   // setupGyro();
