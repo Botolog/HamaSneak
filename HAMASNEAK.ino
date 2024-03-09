@@ -290,7 +290,7 @@ void uploadScan(String StrScan[])
   String FULL = "";
   for (int i = 0; i < 180; i++)
   {
-    FULL.concat(StrScan[i] + '\n');
+    // FULL.concat(StrScan[i] + '\n');
     // delay(10);
   }
   // Serial.println(FULL);
