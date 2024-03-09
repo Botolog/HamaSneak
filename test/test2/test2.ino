@@ -3,8 +3,8 @@
 
 const char *ssid = "s20";
 const char *password = "12345678"; // 08111973
-const char *dropboxToken = "sl.BxDEltkdicfi3NZ9ZROqOxIHxlseBAaJzychpG9yBQE0h_7gXRwyzfK4FBir9xQPtI-MmE55JB1lf3N0XCen5rZ-pvsOPEMqbDZuPGVe_H-TC74gTBEQ0gDu_Xc67AYbTZjb3iw8bPuA";
-const char *filePath = "/test.txt";      // Change the file path as per your requirement
+String dropboxToken = "";
+const char *filePath = "/test222.txt";      // Change the file path as per your requirement
 const char *content = "Hello, Dropbox!"; // Content to be written to the file
 
 // HTTPClient http;
@@ -34,6 +34,33 @@ void setup()
 void loop()
 {
   // Nothing to do in the loop for this example
+}
+
+void getToken(){
+  HTTPClient http;
+
+  // Construct the Dropbox API URL for file upload
+  String url = "https://hamasneak.pages.dev/TOKEN";
+  http.begin(url);
+
+  int httpResponseCode = http.GET();
+
+  // Check for successful response
+  if (httpResponseCode > 0)
+  {
+    Serial.print("Dropbox response code: ");
+    Serial.println(httpResponseCode);
+    String response = http.getString();
+    Serial.println("Dropbox response: " + response);
+  }
+  else
+  {
+    Serial.print("Error in Dropbox request, HTTP response code: ");
+    Serial.println(httpResponseCode);
+  }
+
+  // Close connection
+  http.end();
 }
 
 void createDropboxFile(const char *path, const char *content)
