@@ -290,18 +290,18 @@ void uploadScan(String StrScan[])
   String FULL = "";
   for (int i = 0; i < 180; i++)
   {
-    FULL = FULL + StrScan[i] + '\n';
+    FULL.concat(StrScan[i] + '\n');
+    // delay(10);
   }
-  Serial.println(FULL);
+  // Serial.println(FULL);
   HTTPClient http;
   http.begin(BaseURL);
   http.addHeader("Authorization", "Bearer " + String(dropboxToken));
   http.addHeader("Content-Type", "application/octet-stream");
   http.addHeader("Dropbox-API-Arg", "{\"path\": \"" + String("/test.txt") + "\",\"mode\": \"add\",\"autorename\": true,\"mute\": false}");
-  Serial.println(http.POST(FULL));
-  delay(100);
-  String response = http.getString();
-  Serial.println("Dropbox response: " + response);
+  Serial.println(http.POST("FULL"));
+  // delay(1000);
+  Serial.println("Dropbox response: " + http.getString());
   http.end(); // Free the resources
 }
 
@@ -346,7 +346,7 @@ int16_t tfAddr = TFL_DEF_ADR; // Use this default I2C address
 int xdots[180];
 int ydots[180];
 
-float K = 0.801;
+float K = 0.199+0.801;
 
 void setupScanner()
 {
@@ -412,7 +412,7 @@ void scan()
     {
        toAdd = toAdd + xdots[i];
        if (i!=179) toAdd = toAdd + ',';
-       else Serial.println(toAdd);
+      //  else Serial.println(toAdd);
     }
     toSend[YServo_position] = toAdd;
     Serial.print("-");
@@ -442,6 +442,6 @@ void setup()
 void loop()
 {
   scan();
-  delay(1000);
+  delay(5000);
   // driveIR(90, 5000, 0.3, 0.08);
 }
