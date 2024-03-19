@@ -213,7 +213,7 @@ float readIR(bool right, bool analog = true)
   }
 }
 
-void driveIR(int speed, int duration = 0, float hardness = 0.5, float Ddrift = 0.05)
+void driveIR(int speed, int duration = 0, float hardness = 0.3, float Ddrift = 0.08)
 {
   duration = duration * 1000;
   unsigned long now = millis();
@@ -455,9 +455,9 @@ void setup()
   // setupDisplay();
   // setupRGB();
   // setupGyro();
-  // setupIR();
-  setupWiFi();
-  setupScanner();
+  setupIR();
+  // setupWiFi();
+  // setupScanner();
 
   Serial.println("Ready! Starting...");
   delay(500);
@@ -465,7 +465,7 @@ void setup()
 
 void loop()
 {
-  scan();
-  delay(5000);
-  // driveIR(90, 5000, 0.3, 0.08);
+  // scan();
+  delay(50);
+  driveIR(90, 5000, 0.3, 0.08);
 }
