@@ -240,6 +240,8 @@ void driveIR(int speed, int duration = 0, float hardness = 0.3, float Ddrift = 0
 const char *ssid = "Kaluga 2.4";
 const char *password = "41931047";
 
+WiFiServer server(80);
+
 String BaseURL = "https://content.dropboxapi.com/2/files/upload";
 String dropboxToken = ":(";
 
@@ -251,7 +253,10 @@ void setupWiFi()
     delay(1000);
     Serial.println("Connecting to WiFi..");
   }
-  getToken();
+  Serial.println("");
+  Serial.print("WiFi connected: ");
+  Serial.println(WiFi.localIP());
+  // getToken();
 }
 
 String getToken()
@@ -298,6 +303,7 @@ String startSession()
   Serial.println("Dropbox response: " + Y);
   return Y.substring(16, Y.length() - 2);
 }
+
 void uploadScan(String StrScan[])
 {
   int charCount = 0;
@@ -312,7 +318,7 @@ void uploadScan(String StrScan[])
     http.addHeader("Content-Type", "application/octet-stream");
     http.addHeader("Dropbox-API-Arg", "{\"close\":false,\"cursor\":{\"offset\":" + String(charCount) + ",\"session_id\":\"" + String(SID) + "\"}}");
     Serial.println(http.POST((StrScan[i] + '\n')));
-    charCount += StrScan[i].length()+1;
+    charCount += StrScan[i].length() + 1;
     // delay(1000);
     Serial.println("Dropbox response: " + http.getString());
     http.end(); // Free the resources
@@ -335,7 +341,7 @@ void uploadRout(char act, int Size = 0)
   http.begin(str);
   int httpCode = http.GET();
   if (httpCode > 0)
-  { // Check for the returning code
+  { 
 
     String payload = http.getString();
     Serial.println(httpCode);
@@ -351,6 +357,62 @@ void uploadRout(char act, int Size = 0)
   http.end(); // Free the resources
   // uploadRout('S'); SCAN
   // uploadRout('F', 10); FORWARD 10cm
+}
+
+bool cont(String inputString, char letter) {
+  for (int i = 0; i < inputString.length(); i++) {
+    if (inputString.charAt(i) == letter) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+void remoteCtrl()
+{
+  server.begin();
+  String command = "N";
+  WiFiClient client = server.available();
+  Serial.println("rmtctrl started");
+  if (client)
+  {
+    Serial.println("New client connected");
+    while (client.connected() || command == "/")
+    {
+      if (client.available())
+      {
+        command = client.readStringUntil(';');
+        Serial.println("Received command: " + command);
+        int speed = 0, shift = 0;
+        if (cont(command, 'F'))
+        {
+          speed += 100;
+        }
+        if (cont(command, 'B'))
+        {
+          speed -= 100;
+        }
+        if (cont(command, 'L'))
+        {
+          shift += 50;
+        }
+        if (cont(command, 'R'))
+        {
+          shift -= 50;
+        }
+        if (!cont(command, 'N'))
+        {
+          drive(speed, 0, shift);
+        }
+        else
+        {
+          stop();
+        }
+      }
+    }
+  }
+  Serial.println("Client disconnected");
 }
 
 // Scanner (Servo+TFL)
@@ -440,7 +502,6 @@ void scan()
     toSend[YServo_position] = toAdd;
     Serial.print("-");
     Serial.println(YServo_position);
-    
 
     delay(20);
   }
@@ -456,7 +517,7 @@ void setup()
   // setupRGB();
   // setupGyro();
   setupIR();
-  // setupWiFi();
+  setupWiFi();
   // setupScanner();
 
   Serial.println("Ready! Starting...");
@@ -465,7 +526,9 @@ void setup()
 
 void loop()
 {
-  // scan();
-  delay(50);
-  driveIR(90, 5000, 0.3, 0.08);
+  Serial.println("starting rmtctrl...");
+  remoteCtrl();
+  Serial.println("rmtctrl ended");
+  delay(5000);
+  // driveIR(90, 5000, 0.3, 0.08);
 }
