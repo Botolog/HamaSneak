@@ -1,22 +1,24 @@
+bool EN_MOTORS = false, EN_DISPLAY = false, EN_RGB = false, EN_GYRO = false, EN_IR = false, EN_WIFI = false, EN_SCANNER = false, EN_SERVO = false;
 // Motors
 #define Rplus 12
 #define Rminus 13
 #define Lplus 4
 #define Lminus 15
 
-const int freq = 5000;
+const int freq = 3000;
 const int resolution = 8;
 
 void setupMotors()
 {
-  ledcSetup(1, freq, resolution);
-  ledcSetup(2, freq, resolution);
-  ledcSetup(3, freq, resolution);
-  ledcSetup(4, freq, resolution);
-  ledcAttachPin(Rplus, 1);
-  ledcAttachPin(Rminus, 2);
-  ledcAttachPin(Lplus, 3);
-  ledcAttachPin(Lminus, 4);
+  EN_MOTORS = true;
+  ledcSetup(5, freq, resolution);
+  ledcSetup(6, freq, resolution);
+  ledcSetup(7, freq, resolution);
+  ledcSetup(8, freq, resolution);
+  ledcAttachPin(Rplus, 5);
+  ledcAttachPin(Rminus, 6);
+  ledcAttachPin(Lplus, 7);
+  ledcAttachPin(Lminus, 8);
 }
 
 void SetSpeed(bool right, float speed = 0)
@@ -26,13 +28,13 @@ void SetSpeed(bool right, float speed = 0)
 
   if (right)
   {
-    ledcWrite(1, speed);
-    ledcWrite(2, 255 - speed);
+    ledcWrite(5, speed);
+    ledcWrite(6, 255 - speed);
   }
   else
   {
-    ledcWrite(3, speed);
-    ledcWrite(4, 255 - speed);
+    ledcWrite(7, speed);
+    ledcWrite(8, 255 - speed);
   }
 }
 
@@ -45,10 +47,10 @@ void drive(int speed, int duration = 0, float shift = 0)
 
 void stop()
 {
-  ledcWrite(1, 0);
-  ledcWrite(2, 0);
-  ledcWrite(3, 0);
-  ledcWrite(4, 0);
+  ledcWrite(5, 0);
+  ledcWrite(6, 0);
+  ledcWrite(7, 0);
+  ledcWrite(8, 0);
 }
 
 void turn(int speed, float targetAngel = 90)
@@ -77,6 +79,7 @@ float resetedAngel = 0;
 
 void setupGyro()
 {
+  EN_GYRO = true;
   Wire.begin();
   mpu.initialize();
   mpu.CalibrateGyro();
@@ -94,9 +97,31 @@ float getRawAngel()
   return gyroAngleX;
 }
 
-float getAngel() { return getRawAngel() - resetedAngel; }
+float getAngel()
+{
+  if (EN_GYRO)
+  {
+    return getRawAngel() - resetedAngel;
+  }
+  else
+  {
+    Serial.println("pls turn on gyro!!");
+    ESP.restart();
+  }
+}
 
-void resetAngel() { resetedAngel = getRawAngel(); }
+void resetAngel()
+{
+  if (EN_GYRO)
+  {
+    resetedAngel = getRawAngel();
+  }
+  else
+  {
+    Serial.println("pls turn on gyro!!");
+    ESP.restart();
+  }
+}
 
 void driveP(int speed, int duration = 0, float targetAngel = 0)
 {
@@ -126,6 +151,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 void setupDisplay()
 {
+  EN_DISPLAY = true;
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
   { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
@@ -163,6 +189,7 @@ void printOnDisplay(String text, bool clear = true)
 
 void setupRGB()
 {
+  EN_RGB = true;
   pinMode(Rled, OUTPUT);
   pinMode(Gled, OUTPUT);
   pinMode(Bled, OUTPUT);
@@ -177,18 +204,38 @@ void RGB(bool R, bool G, bool B)
 
 void generateR(int i) {}
 
+// Servos
+#include <Servo.h>
+
+Servo Xservo;
+Servo Yservo;
+
+void setupServo(){
+  EN_SERVO = true;
+  Xservo.attach(23);
+  Yservo.attach(2);
+  Yservo.write(0);
+  Xservo.write(0);
+}
+
 // IR
 #define RIR 34
 #define LIR 35
 
 void setupIR()
 {
+  EN_IR = true;
   pinMode(RIR, INPUT);
   pinMode(LIR, INPUT);
 }
 
 float readIR(bool right, bool analog = true)
 {
+  if (!EN_IR)
+  {
+    Serial.println("pls turn on IR!!");
+    ESP.restart();
+  }
   if (analog)
   {
     if (right)
@@ -247,6 +294,7 @@ String dropboxToken = ":(";
 
 void setupWiFi()
 {
+  EN_WIFI = true;
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -256,6 +304,10 @@ void setupWiFi()
   Serial.println("");
   Serial.print("WiFi connected: ");
   Serial.println(WiFi.localIP());
+  if (EN_DISPLAY)
+  {
+    printOnDisplay(String(WiFi.localIP()));
+  }
   // getToken();
 }
 
@@ -341,7 +393,7 @@ void uploadRout(char act, int Size = 0)
   http.begin(str);
   int httpCode = http.GET();
   if (httpCode > 0)
-  { 
+  {
 
     String payload = http.getString();
     Serial.println(httpCode);
@@ -359,15 +411,36 @@ void uploadRout(char act, int Size = 0)
   // uploadRout('F', 10); FORWARD 10cm
 }
 
-bool cont(String inputString, char letter) {
-  for (int i = 0; i < inputString.length(); i++) {
-    if (inputString.charAt(i) == letter) {
-      return true;
-    }
-  }
-  return false;
-}
+int contX;
+int contY;
+int camX;
+int camY;
 
+void sep(String a)
+{
+  // Remove the first and last characters (assuming they are "[" and "]")
+  a.remove(0, 1);
+  a.remove(a.length() - 1);
+
+  // Split the string by ","
+  int commaIndex1 = a.indexOf(',');
+  String b = a.substring(0, commaIndex1); // Extract substring before the first comma
+
+  // Find the second comma after the first one
+  int commaIndex2 = a.indexOf(',', commaIndex1 + 1);
+  String c = a.substring(commaIndex1 + 1, commaIndex2); // Extract substring between first and second comma
+
+  // Find the third comma after the second one
+  int commaIndex3 = a.indexOf(',', commaIndex2 + 1);
+  String d = a.substring(commaIndex2 + 1, commaIndex3); // Extract substring between second and third comma
+  String e = a.substring(commaIndex3 + 1);              // Extract substring after the third comma
+
+  // Convert substrings to integers and store them in global variables
+  contX = b.toInt();
+  contY = c.toInt();
+  camX = d.toInt();
+  camY = e.toInt();
+}
 
 void remoteCtrl()
 {
@@ -384,30 +457,20 @@ void remoteCtrl()
       {
         command = client.readStringUntil(';');
         Serial.println("Received command: " + command);
-        int speed = 0, shift = 0;
-        if (cont(command, 'F'))
-        {
-          speed += 100;
-        }
-        if (cont(command, 'B'))
-        {
-          speed -= 100;
-        }
-        if (cont(command, 'L'))
-        {
-          shift += 50;
-        }
-        if (cont(command, 'R'))
-        {
-          shift -= 50;
-        }
-        if (!cont(command, 'N'))
+        sep(command);
+        int speed = contY, shift = contX;
+        if (speed != 0 || shift != 0)
         {
           drive(speed, 0, shift);
         }
         else
         {
           stop();
+        }
+        if (EN_SERVO)
+        {
+          Xservo.write(camX);
+          Yservo.write(camY);
         }
       }
     }
@@ -417,13 +480,8 @@ void remoteCtrl()
 
 // Scanner (Servo+TFL)
 #include <TFLI2C.h>
-#include <Servo.h>
 
 TFLI2C tflI2C;
-
-Servo Xservo;
-Servo Yservo;
-
 int16_t tfDist;               // distance in centimeters
 int16_t tfAddr = TFL_DEF_ADR; // Use this default I2C address
 
@@ -434,11 +492,7 @@ float K = 0.199 + 0.801;
 
 void setupScanner()
 {
-  Xservo.attach(23);
-  Yservo.attach(2);
-  Yservo.write(0);
-  Xservo.write(0);
-
+  EN_SCANNER = true;
   while (0)
   {
     delay(1500);
@@ -456,6 +510,11 @@ void setupScanner()
 
 int16_t mesure()
 {
+  if (!EN_SCANNER)
+  {
+    Serial.println("pls turn on scanner!!");
+    ESP.restart();
+  }
   delay(3);
   tflI2C.getData(tfDist, tfAddr);
   return tfDist;
@@ -513,10 +572,11 @@ void setup()
 {
   Serial.begin(115200);
   setupMotors();
+  setupServo();
   // setupDisplay();
   // setupRGB();
   // setupGyro();
-  setupIR();
+  // setupIR();
   setupWiFi();
   // setupScanner();
 
