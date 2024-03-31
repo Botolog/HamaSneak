@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>ESP32-CAM Image Stream</title>
+		<style>
+			/* Style for the image container */
+			#image-container {
+				margin: 0 auto;
+				text-align: center;
+			}
+
+			/* Style for the image */
+			#image-stream {
+				max-width: 100%;
+				height: auto;
+			}
+			.grid-container {
+				display: grid;
+				grid-template-columns: repeat(
+					15,
+					100px
+				); /* Adjust the number and size of columns as needed */
+				grid-template-rows: repeat(
+					100,
+					78px
+				); /* Adjust the number and size of rows as needed */
+				gap: 1px; /* Adjust the gap between grid items as needed */
+			}
+
+			/* Styling for grid items */
+			.grid-item {
+				background-color: #ccc; /* Background color for grid items */
+				border: 1px solid #999; /* Border for grid items */
+				padding: 5px; /* Padding inside grid items */
+				text-align: center; /* Center text inside grid items */
+				font-size: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="grid-container" style="align-content: center"></div>
+		<script>
+			// JavaScript to dynamically add grid items
+			document.addEventListener("DOMContentLoaded", function () {
+				var gridContainer = document.querySelector(".grid-container");
+				for (var j = 0; j < 1; j++) {
+					for (var i = 0; i < 50; i++) {
+						var newGridItem = document.createElement("div");
+						newGridItem.classList.add("grid-item");
+						newGridItem.id = "image-container";
+						var newImgItem = document.createElement("img");
+						newImgItem.id = "image-stream";
+						newImgItem.src = `http://10.0.${j}.${i}`;
+						newImgItem.alt = newImgItem.src.slice(6);
+						newGridItem.appendChild(newImgItem);
+						// newGridItem.textContent = "Grid Item " + (i + 1);
+						gridContainer.appendChild(newGridItem);
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

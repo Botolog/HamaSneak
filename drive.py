@@ -5,7 +5,7 @@ from time import sleep as wait
 
 
 def tupToStr(A):
-    return str(f"({A[0]},{A[1]},{A[2]},{A[3]})")
+    return str(f"({A[0]},{A[1]},{A[2]},{A[3]},{A[4]})")
 
 
 def prepToSend(A):
@@ -25,21 +25,33 @@ def check_keys():
     return (AX, AY)
 
 
-def check_axes():
+
+def check_controller():
+    global pastBX, pastBY
     pygame.event.get()
     axes = joystick.get_numaxes()
 
     AX = int(joystick.get_axis(0) * -10) * 10
     AY = int(joystick.get_axis(1) * -10) * 10
-    BX = 180-int(90 * joystick.get_axis(2) + 90)
-    BY = 180-int(-45 * joystick.get_axis(3) + 45)
-    return (AX, AY, BX, BY)
+    if joystick.get_button(8) > 0:
+        BX = 180 - int(90 * joystick.get_axis(2) + 90)
+        BY = 180 - int(-45 * joystick.get_axis(3) + 45)
+    else:
+        BX = pastBX
+        BY = pastBY
+    OP = min(joystick.get_button(9) + joystick.get_button(10), 1)
+    OP += joystick.get_button(15)*2
+    pastBX = BX
+    pastBY = BY
+
+    return (AX, AY, BX, BY, OP)
 
 
 def d(a, b):
-    delta =0
+    delta = 0
     for i in range(4):
         delta += abs(a[i] - b[i])
+    delta += abs(a[4] - b[4]) * 50
     return delta > 10
 
 
@@ -47,12 +59,17 @@ pygame.init()
 pygame.joystick.init()
 clock = pygame.time.Clock()
 
+
+pastBX = 0
+pastBY = 0
+
 pastKeyInput = (0, 0)
-pastConInput = (0, 0, 0, 0)
+pastConInput = (0, 0, 0, 0, 0)
 
 HOST = input("input the IP: ")  # Replace with ESP32's IP address
 PORT = 80
 
+# if True:
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
     if pygame.joystick.get_count() > 0:
@@ -60,10 +77,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         joystick.init()
         axes = joystick.get_numaxes()
         while True:
-            conInput = check_axes()
+            conInput = check_controller()
             if d(conInput, pastConInput):
-                s.sendall(prepToSend(tupToStr(conInput)))
                 print(tupToStr(conInput))
+                s.sendall(prepToSend(tupToStr(conInput)))
                 pastConInput = conInput
                 wait(0.1)
     else:

@@ -1,5 +1,5 @@
 bool EN_MOTORS = false, EN_DISPLAY = false, EN_RGB = false, EN_GYRO = false, EN_IR = false, EN_WIFI = false, EN_SCANNER = false, EN_SERVO = false;
-// Motors
+//* Motors
 #define Rplus 12
 #define Rminus 13
 #define Lplus 4
@@ -68,7 +68,7 @@ void turn(int speed, float targetAngel = 90)
   stop();
 }
 
-// MPU6050
+//* MPU6050
 #include <Wire.h> // type: ignore
 #include <MPU6050.h>
 
@@ -137,7 +137,7 @@ void driveP(int speed, int duration = 0, float targetAngel = 0)
   }
 }
 
-// Screen
+//* Screen
 #include <Adafruit_SSD1306.h>
 #include <splash.h>
 #include <SPI.h>
@@ -182,7 +182,7 @@ void printOnDisplay(String text, bool clear = true)
   display.display();
 }
 
-// RGB led
+//* RGB led
 #define Rled 26
 #define Gled 27
 #define Bled 2
@@ -204,21 +204,39 @@ void RGB(bool R, bool G, bool B)
 
 void generateR(int i) {}
 
-// Servos
+//* Servos
 #include <Servo.h>
 
 Servo Xservo;
 Servo Yservo;
 
-void setupServo(){
+void setupServo()
+{
   EN_SERVO = true;
+  pinMode(25, OUTPUT);
   Xservo.attach(23);
   Yservo.attach(2);
   Yservo.write(0);
   Xservo.write(0);
 }
 
-// IR
+int XservoPos = 0, YservoPos = 0;
+
+void targetServo(int Xtarget, int Ytarget)
+{
+  while (abs(Xtarget - XservoPos) + abs(Ytarget - YservoPos) > 2)
+  {
+    int dx = abs(Xtarget - XservoPos) / (Xtarget - XservoPos);
+    int dy = abs(Ytarget - YservoPos) / (Ytarget - YservoPos);
+    Xservo.write(XservoPos + dx);
+    XservoPos = XservoPos + dx;
+    Yservo.write(YservoPos + dy);
+    YservoPos = YservoPos + dy;
+    delay(20);
+  }
+}
+
+//* IR
 #define RIR 34
 #define LIR 35
 
@@ -280,7 +298,7 @@ void driveIR(int speed, int duration = 0, float hardness = 0.3, float Ddrift = 0
     // driveIR(100, 5000, 0.6, 0.02); for soft angles like a little curve
 }
 
-// WiFi & HTTP
+//* WiFi & HTTP
 #include <WiFi.h>
 #include <HTTPClient.h>
 
@@ -415,10 +433,10 @@ int contX;
 int contY;
 int camX;
 int camY;
+int option;
 
 void sep(String a)
 {
-  // Remove the first and last characters (assuming they are "[" and "]")
   a.remove(0, 1);
   a.remove(a.length() - 1);
 
@@ -433,13 +451,17 @@ void sep(String a)
   // Find the third comma after the second one
   int commaIndex3 = a.indexOf(',', commaIndex2 + 1);
   String d = a.substring(commaIndex2 + 1, commaIndex3); // Extract substring between second and third comma
-  String e = a.substring(commaIndex3 + 1);              // Extract substring after the third comma
 
-  // Convert substrings to integers and store them in global variables
+  // Find the fourth comma after the third one
+  int commaIndex4 = a.indexOf(',', commaIndex3 + 1);
+  String e = a.substring(commaIndex3 + 1, commaIndex4); // Extract substring between third and fourth comma
+  String f = a.substring(commaIndex4 + 1);              // Extract substring after the fourth comma
+
   contX = b.toInt();
   contY = c.toInt();
   camX = d.toInt();
   camY = e.toInt();
+  option = f.toInt();
 }
 
 void remoteCtrl()
@@ -456,6 +478,10 @@ void remoteCtrl()
       if (client.available())
       {
         command = client.readStringUntil(';');
+        if (command.indexOf("=") != -1)
+        {
+          client.println("YELLLLLLLLO");
+        }
         Serial.println("Received command: " + command);
         sep(command);
         int speed = contY, shift = contX;
@@ -469,8 +495,21 @@ void remoteCtrl()
         }
         if (EN_SERVO)
         {
-          Xservo.write(camX);
-          Yservo.write(camY);
+          targetServo(camX, camY);
+        }
+        if (option == 1)
+        {
+          noTone(25);
+          digitalWrite(25, HIGH);
+        }
+        else if (option == 0)
+        {
+          noTone(25);
+          digitalWrite(25, LOW);
+        }
+        else if (option > 1)
+        {
+          tone(25, 1000);
         }
       }
     }
@@ -478,7 +517,7 @@ void remoteCtrl()
   Serial.println("Client disconnected");
 }
 
-// Scanner (Servo+TFL)
+//* Scanner (Servo+TFL)
 #include <TFLI2C.h>
 
 TFLI2C tflI2C;
@@ -567,7 +606,7 @@ void scan()
   uploadScan(toSend);
 }
 
-// Main
+//* Main
 void setup()
 {
   Serial.begin(115200);
