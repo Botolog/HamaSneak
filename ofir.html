@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Arduino Communication</title>
+    <script>
+        function sendData() {
+            var message = document.getElementById("message").value;
+            var socket = new WebSocket("ws://192.168.0.177:80");
+
+            socket.onopen = function (event) {
+                socket.send(message);
+            };
+
+            socket.onmessage = function (event) {
+                console.log("Received: " + event.data);
+                document.getElementById("response").innerHTML = "Response from Arduino: " + event.data;
+            };
+
+            socket.onclose = function (event) {
+                console.log("Connection closed");
+            };
+        }
+    </script>
+</head>
+<body>
+    <h1>Arduino Communication</h1>
+    <input type="text" id="message" placeholder="Enter message">
+    <button onclick="sendData()">Send</button>
+    <p id="response"></p>
+</body>
+</html>
