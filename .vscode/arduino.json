@@ -1,8 +1,8 @@
 {
-    "port": "COM4",
-    "board": "esp32:esp32:esp32doit-devkit-v1",
+    "port": "COM10",
+    "board": "esp32:esp32:esp32cam",
     "programmer": "esptool",
-    "sketch": "HamaSneak.ino",
+    "sketch": "espcam\\espcam.ino",
     "output": "../ZARDUINO",
-    "configuration": "FlashFreq=80,UploadSpeed=921600,DebugLevel=none,EraseFlash=none"
+    "configuration": "CPUFreq=240,FlashMode=qio,PartitionScheme=huge_app,FlashFreq=80,DebugLevel=none,EraseFlash=none"
 }

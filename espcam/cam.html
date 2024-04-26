@@ -45,14 +45,14 @@
 			// JavaScript to dynamically add grid items
 			document.addEventListener("DOMContentLoaded", function () {
 				var gridContainer = document.querySelector(".grid-container");
-				for (var j = 254; j < 256; j++) {
-					for (var i = 0; i < 255; i++) {
+				for (var j = 0; j < 1; j++) {
+					for (var i = 0; i < 50; i++) {
 						var newGridItem = document.createElement("div");
 						newGridItem.classList.add("grid-item");
 						newGridItem.id = "image-container";
 						var newImgItem = document.createElement("img");
 						newImgItem.id = "image-stream";
-						newImgItem.src = `http://192.168.${j}.${i}`;
+						newImgItem.src = `http://10.0.${j}.${i}`;
 						newImgItem.alt = newImgItem.src.slice(6);
 						newGridItem.appendChild(newImgItem);
 						// newGridItem.textContent = "Grid Item " + (i + 1);

@@ -307,8 +307,7 @@ const char *password = "41931047";
 
 WiFiServer server(80);
 
-String BaseURL = "https://content.dropboxapi.com/2/files/upload";
-String dropboxToken = ":(";
+String BaseURL = "";
 
 void setupWiFi()
 {
@@ -326,81 +325,6 @@ void setupWiFi()
   {
     printOnDisplay(String(WiFi.localIP()));
   }
-  // getToken();
-}
-
-String getToken()
-{
-  HTTPClient http;
-
-  // Construct the Dropbox API URL for file upload
-  String url = "https://hamasneak.pages.dev/TOKEN";
-  http.begin(url);
-
-  int httpResponseCode = http.GET();
-
-  // Check for successful response
-  String response = "NOPE";
-  if (httpResponseCode > 0)
-  {
-    Serial.print("Dropbox response code: ");
-    Serial.println(httpResponseCode);
-    response = http.getString();
-    Serial.println("Dropbox response: " + response);
-  }
-  else
-  {
-    Serial.print("Error in Dropbox request, HTTP response code: ");
-    Serial.println(httpResponseCode);
-  }
-
-  // Close connection
-  http.end();
-  dropboxToken = response;
-  return response;
-}
-
-String startSession()
-{
-  HTTPClient http;
-  http.begin("https://content.dropboxapi.com/2/files/upload_session/start");
-  http.addHeader("Authorization", "Bearer " + String(dropboxToken));
-  http.addHeader("Content-Type", "application/octet-stream");
-  http.addHeader("Dropbox-API-Arg", "{\"close\":false}");
-  Serial.println(http.POST(""));
-  // delay(1000);
-  String Y = http.getString();
-  Serial.println("Dropbox response: " + Y);
-  return Y.substring(16, Y.length() - 2);
-}
-
-void uploadScan(String StrScan[])
-{
-  int charCount = 0;
-  String SID = startSession();
-  Serial.println("SID: " + SID);
-  HTTPClient http;
-  for (int i = 0; i < 180; i++)
-  {
-    // (StrScan[i] + '\n');
-    http.begin("https://content.dropboxapi.com/2/files/upload_session/append_v2");
-    http.addHeader("Authorization", "Bearer " + String(dropboxToken));
-    http.addHeader("Content-Type", "application/octet-stream");
-    http.addHeader("Dropbox-API-Arg", "{\"close\":false,\"cursor\":{\"offset\":" + String(charCount) + ",\"session_id\":\"" + String(SID) + "\"}}");
-    Serial.println(http.POST((StrScan[i] + '\n')));
-    charCount += StrScan[i].length() + 1;
-    // delay(1000);
-    Serial.println("Dropbox response: " + http.getString());
-    http.end(); // Free the resources
-  }
-  http.begin("https://content.dropboxapi.com/2/files/upload_session/finish");
-  http.addHeader("Authorization", "Bearer " + String(dropboxToken));
-  http.addHeader("Content-Type", "application/octet-stream");
-  http.addHeader("Dropbox-API-Arg", "{\"commit\":{\"autorename\":true,\"mode\":\"add\",\"mute\":false,\"path\":\"" + String("/test.txt") + "\",\"strict_conflict\":false},\"cursor\":{\"offset\":" + String(charCount) + ",\"session_id\":\"" + String(SID) + "\"}}");
-  Serial.println(http.POST(""));
-  // delay(1000);
-  Serial.println("Dropbox response: " + http.getString());
-  http.end(); // Free the resources
 }
 
 void uploadRout(char act, int Size = 0)
@@ -478,9 +402,10 @@ void remoteCtrl()
       if (client.available())
       {
         command = client.readStringUntil(';');
-        if (command.indexOf("=") != -1)
+        if (command.indexOf("/") != -1)
         {
-          client.println("YELLLLLLLLO");
+          Serial.println("Got IP: " + command);
+          BaseURL = command;
         }
         Serial.println("Received command: " + command);
         sep(command);
@@ -499,17 +424,15 @@ void remoteCtrl()
         }
         if (option == 1)
         {
-          noTone(25);
           digitalWrite(25, HIGH);
         }
         else if (option == 0)
         {
-          noTone(25);
           digitalWrite(25, LOW);
         }
         else if (option > 1)
         {
-          tone(25, 1000);
+          scan();
         }
       }
     }
@@ -554,8 +477,9 @@ int16_t mesure()
     Serial.println("pls turn on scanner!!");
     ESP.restart();
   }
-  delay(3);
+  delay(10);
   tflI2C.getData(tfDist, tfAddr);
+  Serial.println(tfDist);
   return tfDist;
 }
 
@@ -588,22 +512,27 @@ void scan()
     }
     Yservo.write(YServo_position);
     Xservo.write(0);
-    // uploadScan(YServo_position, xdots);
+    uploadScan(YServo_position, xdots);
     String toAdd = "";
-    for (int i = 0; i < 180; i++)
-    {
-      toAdd = toAdd + xdots[i];
-      if (i != 179)
-        toAdd = toAdd + ',';
-      //  else Serial.println(toAdd);
-    }
-    toSend[YServo_position] = toAdd;
-    Serial.print("-");
-    Serial.println(YServo_position);
 
     delay(20);
   }
-  uploadScan(toSend);
+  
+}
+
+void uploadScan(int pos, int theScan[180])
+{
+  HTTPClient http;
+  String Line = "";
+  for (int i=0; i<179; i++){
+    Line += theScan[i] + ",";
+  }
+  Line += theScan[179];
+
+    String url = BaseURL + "US/" + pos + "/" + Line;
+    http.begin(url);
+    int httpResponseCode = http.GET();
+    http.end();
 }
 
 //* Main
@@ -615,9 +544,9 @@ void setup()
   // setupDisplay();
   // setupRGB();
   // setupGyro();
-  // setupIR();
+  setupIR();
   setupWiFi();
-  // setupScanner();
+  setupScanner();
 
   Serial.println("Ready! Starting...");
   delay(500);

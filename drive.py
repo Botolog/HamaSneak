@@ -2,6 +2,7 @@ import socket
 import keyboard
 import pygame
 from time import sleep as wait
+from time import time as now
 
 
 def tupToStr(A):
@@ -54,6 +55,8 @@ def d(a, b):
     delta += abs(a[4] - b[4]) * 50
     return delta > 10
 
+def GET_IP():
+    return "http://" + socket.gethostbyname("E7470") + ":8080/"
 
 pygame.init()
 pygame.joystick.init()
@@ -68,19 +71,22 @@ pastConInput = (0, 0, 0, 0, 0)
 
 HOST = input("input the IP: ")  # Replace with ESP32's IP address
 PORT = 80
+lastSend = 0
 
 # if True:
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
+    s.sendall(prepToSend(GET_IP()))
     if pygame.joystick.get_count() > 0:
         joystick = pygame.joystick.Joystick(0)
         joystick.init()
         axes = joystick.get_numaxes()
         while True:
             conInput = check_controller()
-            if d(conInput, pastConInput):
+            if d(conInput, pastConInput) or (now() - lastSend>1):
                 print(tupToStr(conInput))
                 s.sendall(prepToSend(tupToStr(conInput)))
+                lastSend = now()
                 pastConInput = conInput
                 wait(0.1)
     else:
